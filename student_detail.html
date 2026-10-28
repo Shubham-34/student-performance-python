@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-head">
+  <div class="profile">
+    <span class="avatar lg" data-name="{{ s.name }}"></span>
+    <div>
+      <h1>{{ s.name }} <small>{{ s.roll_no }}</small></h1>
+      <span class="note">{{ s.department }}{% if s.email %} · {{ s.email }}{% endif %}</span>
+    </div>
+  </div>
+  <a class="btn btn-light" href="{{ url_for('student_edit', student_id=s.id) }}">✏️ Edit details</a>
+</div>
+
+<section class="cards">
+  <div class="card"><span class="label">Average</span><span class="big" data-count="{{ perf.average }}" data-decimals="1">{{ "%.1f"|format(perf.average) }}</span></div>
+  <div class="card"><span class="label">Total</span><span class="big" data-count="{{ perf.total }}">{{ perf.total }}</span></div>
+  <div class="card"><span class="label">Grade</span><span class="big">{{ perf.grade }}</span></div>
+  <div class="card"><span class="label">Attendance</span><span class="big" data-count="{{ s.attendance }}" data-decimals="1" data-suffix="%">{{ "%.1f"|format(s.attendance) }}%</span>
+    <div class="meter {{ 'good' if s.attendance >= 75 else 'low' }}"><span data-width="{{ s.attendance }}"></span></div></div>
+  <div class="card"><span class="label">Status</span>
+    <span class="big"><span class="badge {{ 'ok' if perf.status == 'PASS' else ('bad' if perf.status == 'FAIL' else 'warn') }}">{{ perf.status }}</span></span></div>
+</section>
+
+<h2>Marks</h2>
+{% if not marks %}
+  <p class="note">No marks recorded yet. Add the first one below.</p>
+{% else %}
+<div class="marks-list">
+  {% for m in marks %}
+  <div class="mark-row">
+    <span class="subject">{{ m.subject }}</span>
+    <div class="meter {{ 'good' if m.score >= 70 else ('mid' if m.score >= pass_mark else 'low') }}"><span data-width="{{ m.score }}"></span></div>
+    <span class="score">{{ m.score }}</span>
+    <span class="badge {{ 'ok' if m.score >= pass_mark else 'bad' }}">{{ 'Pass' if m.score >= pass_mark else 'Fail' }}</span>
+    <form method="post" action="{{ url_for('mark_delete', mark_id=m.id) }}"
+          data-confirm-title="Remove {{ m.subject }}?" data-confirm="The {{ m.subject }} mark will be deleted.">
+      <button class="link-danger" type="submit">Remove</button>
+    </form>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<h2>Add or update a mark</h2>
+<form class="form wide" method="post" action="{{ url_for('mark_save', student_id=s.id) }}">
+  <label>Subject
+    <input name="subject" id="subjectInput" maxlength="60" required placeholder="Type a subject or pick one below" autocomplete="off">
+  </label>
+  <div class="chips">
+    {% for sub in subjects %}<button class="chip" type="button" data-subject="{{ sub }}">{{ sub }}</button>{% endfor %}
+  </div>
+  <label>Score (0-100)
+    <div class="range-row">
+      <input type="range" id="scoreRange" min="0" max="100" value="50">
+      <input type="number" id="scoreNumber" name="score" min="0" max="100" required placeholder="0-100">
+    </div>
+  </label>
+  <div class="form-actions">
+    <button class="btn" type="submit">Save mark</button>
+    <span class="note">Using a subject that already exists updates its score.</span>
+  </div>
+</form>
+<p><a href="{{ url_for('students') }}">&larr; Back to students</a></p>
+{% endblock %}
