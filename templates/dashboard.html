@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="hero">
+  <h1>Student performance at a glance</h1>
+  <p>Track marks, attendance and grades. Everything here updates as soon as you add or change a student.</p>
+  <a class="btn" href="{{ url_for('student_new') }}">+ Add student</a>
+</section>
+
+<section class="cards">
+  <div class="card"><span class="label">Students</span><span class="big" data-count="{{ stats.count }}">{{ stats.count }}</span></div>
+  <div class="card"><span class="label">Class average</span><span class="big" data-count="{{ stats.average }}" data-decimals="1">{{ "%.1f"|format(stats.average) }}</span></div>
+  <div class="card"><span class="label">Passing</span><span class="big ok-text" data-count="{{ stats.passing }}">{{ stats.passing }}</span></div>
+  <div class="card"><span class="label">At risk (attendance)</span><span class="big warn-text" data-count="{{ stats.at_risk }}">{{ stats.at_risk }}</span></div>
+  <div class="card"><span class="label">Failing a subject</span><span class="big bad-text" data-count="{{ stats.failing }}">{{ stats.failing }}</span></div>
+</section>
+
+<div class="grid-2">
+  <section class="panel">
+    <h2>Results overview</h2>
+    <div class="donut-wrap">
+      <svg class="donut" viewBox="0 0 42 42" data-values="{{ stats.passing }},{{ stats.at_risk }},{{ stats.failing }}" role="img" aria-label="Pass, at risk and fail split"></svg>
+      <ul class="legend">
+        <li><span class="dot ok"></span> Pass <strong>{{ stats.passing }}</strong></li>
+        <li><span class="dot warn"></span> At risk <strong>{{ stats.at_risk }}</strong></li>
+        <li><span class="dot bad"></span> Fail <strong>{{ stats.failing }}</strong></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Grade distribution</h2>
+    {% set mx = grade_counts.values()|max %}
+    <div class="vbars">
+      {% for g, c in grade_counts.items() %}
+        <div class="vbar" title="{{ c }} student(s) with grade {{ g }}">
+          <span class="num-top">{{ c }}</span>
+          <div class="col" data-height="{{ (c / mx * 100) if mx else 0 }}"></div>
+          <span class="cap">{{ g }}</span>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Top performers</h2>
+    {% if top5 %}
+    <ol class="rank-list">
+      {% for i in top5 %}
+      <li>
+        <span class="rank-no">{{ loop.index }}</span>
+        <span class="avatar" data-name="{{ i.s.name }}"></span>
+        <span class="rank-name">
+          <a href="{{ url_for('student_detail', student_id=i.s.id) }}">{{ i.s.name }}</a>
+          <span class="meter"><span data-width="{{ i.perf.average }}"></span></span>
+        </span>
+        <strong>{{ "%.1f"|format(i.perf.average) }}</strong>
+      </li>
+      {% endfor %}
+    </ol>
+    {% else %}
+      <p class="note">No marks yet.</p>
+    {% endif %}
+  </section>
+
+  <section class="panel">
+    <h2>Average by subject</h2>
+    {% for r in subject_avgs %}
+      <div style="margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between"><span>{{ r.subject }}</span><strong>{{ r.average }}</strong></div>
+        <div class="meter {{ 'good' if r.average >= 70 else ('mid' if r.average >= 50 else 'low') }}"><span data-width="{{ r.average }}"></span></div>
+      </div>
+    {% else %}
+      <p class="note">No marks yet.</p>
+    {% endfor %}
+  </section>
+</div>
+
+<h2>How a request travels</h2>
+<div class="flow">
+  <div class="node"><b>Client</b><small>Chrome shows HTML + JavaScript and sends HTTP requests</small></div>
+  <div class="arrow">&rarr;</div>
+  <div class="node"><b>Server</b><small>Flask routes in app.py + grading rules</small></div>
+  <div class="arrow">&rarr;</div>
+  <div class="node"><b>sqlite3</b><small>Python database driver, SQL queries</small></div>
+  <div class="arrow">&rarr;</div>
+  <div class="node db"><b>Database</b><small>students and marks tables</small></div>
+</div>
+<p class="note">Open <a href="{{ url_for('status') }}">DB status</a> to see the live connection and row counts.</p>
+{% endblock %}

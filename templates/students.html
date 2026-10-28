@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-head">
+  <h1>Students <small>(<span id="shownCount">{{ items|length }}</span> of {{ total }})</small></h1>
+  <a class="btn" href="{{ url_for('student_new') }}">+ Add student</a>
+</div>
+
+<form class="filters" id="filterForm" method="get" action="{{ url_for('students') }}">
+  <div class="search">
+    <input type="search" id="liveSearch" name="q" placeholder="Type to search name or roll no…" value="{{ q }}" autocomplete="off">
+  </div>
+  <select name="dept" id="liveDept">
+    <option value="">All departments</option>
+    {% for d in departments %}
+      <option value="{{ d }}" {{ 'selected' if d == dept }}>{{ d }}</option>
+    {% endfor %}
+  </select>
+  <a href="{{ url_for('students') }}" id="resetFilters">Reset</a>
+</form>
+
+<div class="empty" id="noMatch" {% if items %}hidden{% endif %}>
+  <p>No students match.</p>
+  <a class="btn" href="{{ url_for('student_new') }}">Add a student</a>
+</div>
+
+<div class="table-wrap" {% if not items %}hidden{% endif %}>
+<table id="studentTable">
+  <thead>
+    <tr>
+      <th data-sort="text">Roll no</th>
+      <th data-sort="text">Student</th>
+      <th data-sort="text">Department</th>
+      <th class="num" data-sort="num">Attendance</th>
+      <th class="num" data-sort="num">Average</th>
+      <th data-sort="text">Grade</th>
+      <th data-sort="text">Status</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for i in items %}
+    <tr data-href="{{ url_for('student_detail', student_id=i.s.id) }}"
+        data-name="{{ i.s.name|lower }}" data-roll="{{ i.s.roll_no|lower }}" data-dept="{{ i.s.department }}">
+      <td>{{ i.s.roll_no }}</td>
+      <td>
+        <div class="who">
+          <span class="avatar" data-name="{{ i.s.name }}"></span>
+          <div><a href="{{ url_for('student_detail', student_id=i.s.id) }}">{{ i.s.name }}</a>
+            <small>{{ i.s.email }}</small></div>
+        </div>
+      </td>
+      <td>{{ i.s.department }}</td>
+      <td class="num" data-value="{{ i.s.attendance }}">{{ "%.1f"|format(i.s.attendance) }}%</td>
+      <td class="num" data-value="{{ i.perf.average }}">
+        {{ "%.1f"|format(i.perf.average) }}
+        <div class="meter {{ 'good' if i.perf.average >= 70 else ('mid' if i.perf.average >= 50 else 'low') }}"><span data-width="{{ i.perf.average }}"></span></div>
+      </td>
+      <td><span class="grade">{{ i.perf.grade }}</span></td>
+      <td><span class="badge {{ 'ok' if i.perf.status == 'PASS' else ('bad' if i.perf.status == 'FAIL' else 'warn') }}">{{ i.perf.status }}</span></td>
+      <td class="actions">
+        <a class="chip-link" href="{{ url_for('student_edit', student_id=i.s.id) }}">Edit</a>
+        <form method="post" action="{{ url_for('student_delete', student_id=i.s.id) }}"
+              data-confirm-title="Delete {{ i.s.name }}?"
+              data-confirm="This removes the student and all of their marks. It cannot be undone.">
+          <button class="link-danger" type="submit">Delete</button>
+        </form>
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+<p class="note">Tip: click a column heading to sort, or click a row to open the student and manage marks.</p>
+{% endblock %}

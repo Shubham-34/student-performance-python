@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Student Performance System{% endblock %}</title>
+  <script>
+    /* set the saved theme before the page paints, so there is no flash */
+    try {
+      var t = localStorage.getItem("theme");
+      if (!t && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) t = "dark";
+      document.documentElement.setAttribute("data-theme", t || "light");
+    } catch (e) {}
+  </script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap bar">
+    <a class="brand" href="{{ url_for('dashboard') }}"><span class="logo">🎓</span> Student Performance</a>
+    <nav>
+      <a href="{{ url_for('dashboard') }}" class="{{ 'active' if nav == 'dashboard' }}">Dashboard</a>
+      <a href="{{ url_for('students') }}" class="{{ 'active' if nav == 'students' }}">Students</a>
+      <a href="{{ url_for('reports') }}" class="{{ 'active' if nav == 'reports' }}">Reports</a>
+      <a href="{{ url_for('status') }}" class="{{ 'active' if nav == 'status' }}">DB status</a>
+      <button class="icon-btn" id="themeToggle" type="button" title="Switch light / dark theme" aria-label="Switch theme">🌙</button>
+    </nav>
+  </div>
+</header>
+
+<div class="toasts" aria-live="polite">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+      <div class="toast {{ 'error' if category == 'error' else 'ok' }}">{{ '⚠️' if category == 'error' else '✅' }} {{ message }}</div>
+    {% endfor %}
+  {% endwith %}
+</div>
+
+<main class="wrap">
+  {% block content %}{% endblock %}
+</main>
+<footer class="foot wrap">Browser (HTML + JS) &rarr; Flask (Python) &rarr; SQLite database</footer>
+
+<dialog id="confirmDialog">
+  <h3 id="confirmTitle">Are you sure?</h3>
+  <p id="confirmText"></p>
+  <div class="dialog-actions">
+    <button class="btn btn-light" id="confirmNo" type="button">Cancel</button>
+    <button class="btn btn-danger" id="confirmYes" type="button">Yes, delete</button>
+  </div>
+</dialog>
+
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
