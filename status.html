@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Database connectivity</h1>
+<div class="alert alert-ok">✅ Connected. A query round trip took {{ info.millis }} ms.</div>
+
+<div class="table-wrap" style="max-width:680px">
+<table class="kv">
+  <tr><th>Database</th><td>SQLite {{ info.sqlite_version }}</td></tr>
+  <tr><th>Python driver</th><td>sqlite3 (standard library)</td></tr>
+  <tr><th>Database file</th><td><code>{{ info.path }}</code></td></tr>
+  <tr><th>Students stored</th><td><strong>{{ info.students }}</strong></td></tr>
+  <tr><th>Marks stored</th><td><strong>{{ info.marks }}</strong></td></tr>
+</table>
+</div>
+
+<p class="note">Add a student, then reload this page to watch the counts change. Hosting platforms can poll <a href="{{ url_for('health') }}">/health</a>.</p>
+{% endblock %}

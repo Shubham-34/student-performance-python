@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Reports</h1>
+<p class="note">Computed with SQL (<code>JOIN</code>, <code>GROUP BY</code>) in <code>app.py</code>.</p>
+
+<h2>Leaderboard</h2>
+<div class="table-wrap">
+<table>
+  <thead><tr><th class="num">Rank</th><th>Roll no</th><th>Student</th><th>Department</th>
+      <th class="num">Subjects</th><th class="num">Total</th><th>Average</th></tr></thead>
+  <tbody>
+  {% for r in ranking %}
+    <tr>
+      <td class="num">{{ '🥇' if loop.index == 1 else ('🥈' if loop.index == 2 else ('🥉' if loop.index == 3 else loop.index)) }}</td>
+      <td>{{ r.roll_no }}</td>
+      <td><div class="who"><span class="avatar" data-name="{{ r.name }}"></span><span>{{ r.name }}</span></div></td>
+      <td>{{ r.department }}</td>
+      <td class="num">{{ r.subjects }}</td><td class="num">{{ r.total }}</td>
+      <td><strong>{{ r.average }}</strong>
+        <div class="meter {{ 'good' if r.average >= 70 else ('mid' if r.average >= 50 else 'low') }}"><span data-width="{{ r.average }}"></span></div></td>
+    </tr>
+  {% else %}
+    <tr><td colspan="7" class="empty">No marks yet.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+
+<h2>By subject</h2>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Subject</th><th class="num">Entries</th><th>Average</th>
+      <th class="num">Highest</th><th class="num">Lowest</th><th class="num">Passed</th></tr></thead>
+  <tbody>
+  {% for r in subjects %}
+    <tr>
+      <td>{{ r.subject }}</td><td class="num">{{ r.entries }}</td>
+      <td><strong>{{ r.average }}</strong>
+        <div class="meter {{ 'good' if r.average >= 70 else ('mid' if r.average >= 50 else 'low') }}"><span data-width="{{ r.average }}"></span></div></td>
+      <td class="num">{{ r.highest }}</td><td class="num">{{ r.lowest }}</td>
+      <td class="num">{{ r.passed }} / {{ r.entries }}</td>
+    </tr>
+  {% else %}
+    <tr><td colspan="6" class="empty">No marks yet.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+
+<h2>By department</h2>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Department</th><th class="num">Students</th><th>Average score</th><th class="num">Average attendance</th></tr></thead>
+  <tbody>
+  {% for r in departments %}
+    <tr>
+      <td>{{ r.department }}</td><td class="num">{{ r.students }}</td>
+      <td><strong>{{ r.average }}</strong>
+        <div class="meter {{ 'good' if r.average >= 70 else ('mid' if r.average >= 50 else 'low') }}"><span data-width="{{ r.average }}"></span></div></td>
+      <td class="num">{{ r.attendance }}%</td>
+    </tr>
+  {% else %}
+    <tr><td colspan="4" class="empty">No data yet.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}
